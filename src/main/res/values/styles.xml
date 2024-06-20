@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme. -->
+    <!-- 浅色主题 -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <!-- Customize your theme here. -->
+    <!--主色调 用于ActionBar或Toolbar的背景色。-->
+    <item name="colorPrimary">@color/colorPrimaryLight</item>
+    <!-- 状态栏颜色 -->
+    <item name="colorPrimaryDark">@color/colorPrimaryDarkLight</item>
+    <!-- 控件选中时的颜色 -->
+    <item name="colorAccent">@color/colorAccentLight</item>
+    <!-- 背景颜色 -->
+    <item name="android:windowBackground">@color/windowBackgroundLight</item>
+    <!-- 文本颜色 -->
+    <item name="android:textColor">@color/textColorPrimaryLight</item>
+    <item name="android:textColorHint">@color/textColorPrimaryLight</item>
+    <item name="colorControlNormal">@color/black</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+</resources>
