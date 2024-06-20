@@ -31,4 +31,6 @@ public interface ContactDao {
     LiveData<Contact>searchContactByName(String keyword);
     @Query("SELECT * FROM contacts WHERE groupName =:keyword ")
     LiveData<List<Contact>>searchContactsByGroup(String keyword);
+
+    // test
 }
