@@ -78,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(String newText) {
                 // 用户输入时调用
+                //121212
                 performSearch(newText);
                 return false;
             }
