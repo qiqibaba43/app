@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/nav_family" android:title="家人"/>
+        <item android:id="@+id/nav_friend" android:title="朋友"/>
+        <item android:id="@+id/nav_classmate" android:title="同学"/>
+        <item android:id="@+id/nav_colleague" android:title="同事"/>
+    </group>
+</menu>
