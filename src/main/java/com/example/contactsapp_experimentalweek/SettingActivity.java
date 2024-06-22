@@ -2,15 +2,12 @@ package com.example.contactsapp_experimentalweek;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.view.MenuItem;
 import android.view.View;
@@ -64,7 +61,7 @@ public class SettingActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             // 处理返回按钮的点击事件
             case android.R.id.home:
-                //刷新主页面
+                // 返回主页面
                 onBackPressed();
                 return true;
             default:
@@ -72,16 +69,17 @@ public class SettingActivity extends AppCompatActivity {
         }
     }
 
-    // 重写onBackPressed()方法
+    // 重写 onBackPressed() 方法
     @Override
     public void onBackPressed() {
         Intent intent = new Intent(SettingActivity.this, MainActivity.class);
-        // 创建一个新的任务栈，并且之前任务栈中的所有活动都会被清除
+        // 创建一个新的任务栈，并且清除之前任务栈中的所有活动
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         super.onBackPressed();
     }
 
+    // 请求权限方法
     private void requestPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             // Android 11及以上版本，使用新的存储权限管理方式
@@ -110,6 +108,7 @@ public class SettingActivity extends AppCompatActivity {
         }
     }
 
+    // 读取数据库中的联系人并写入文件
     @SuppressLint("Range")
     private void readContactsFromDatabaseAndWriteToFile() {
         contactViewModel.getAllContacts().observe(this, new Observer<List<Contact>>() {
@@ -132,6 +131,7 @@ public class SettingActivity extends AppCompatActivity {
         });
     }
 
+    // 将联系人数据导出到文件
     private void exportContactsToFile(String contactData) {
         // 获取外部存储目录
         File externalStorageDir = Environment.getExternalStorageDirectory();
@@ -149,6 +149,7 @@ public class SettingActivity extends AppCompatActivity {
         }
     }
 
+    // 处理权限请求结果
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -161,6 +162,7 @@ public class SettingActivity extends AppCompatActivity {
         }
     }
 
+    // 处理权限设置页面返回结果
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

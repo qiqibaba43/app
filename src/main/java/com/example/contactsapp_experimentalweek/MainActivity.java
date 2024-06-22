@@ -1,6 +1,13 @@
 package com.example.contactsapp_experimentalweek;
 
-import androidx.annotation.NavigationRes;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.SearchView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,22 +15,10 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.content.Intent;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.SearchView;
-import android.widget.Toast;
-
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
@@ -111,8 +106,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(intent);
             }
         });
-
-
     }
 
     @Override
@@ -147,6 +140,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
+    /**
+     * 观察联系人列表的变化，并更新 RecyclerView 的显示
+     *
+     * @param liveData 包含联系人列表的 LiveData
+     */
     private void observeContacts(LiveData<List<Contact>> liveData) {
         if (currentLiveData != null) {
             currentLiveData.removeObservers(this);
@@ -157,7 +155,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             CAdapter.notifyDataSetChanged();
         });
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -177,6 +174,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * 执行搜索操作，根据关键字查询联系人
+     *
+     * @param query 搜索关键字
+     */
     private void performSearch(String query) {
         observeContacts(contactViewModel.searchContactsByKeyword(query));
     }
