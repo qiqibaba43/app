@@ -99,7 +99,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
         }
     }
     public void setContacts(List<Contact> contacts) {
-        this.contactList.clear();
+        //this.contactList.clear();
         contactList= contacts;
         notifyDataSetChanged();
     }

@@ -21,7 +21,7 @@ public class ContactViewModel extends AndroidViewModel {
     }
     // 更新联系人
     public void  updateContact(Contact contact) {
-        cRepository.updateContact(contact);
+        //cRepository.updateContact(contact);
         // 更新 LiveData
         cAllContact = cRepository.getAllContacts();
     }
