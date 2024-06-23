@@ -1,6 +1,8 @@
 package com.example.contactsapp_experimentalweek;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,12 +12,15 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -25,11 +30,13 @@ import com.bumptech.glide.Glide;
 // 联系人详细信息活动类
 public class ContactDetailActivity extends AppCompatActivity {
 
+    private static final int REQUEST_CALL_PERMISSION = 1; // 请求电话权限的请求码
     private EditText edittextName; // 编辑联系人姓名的EditText
     private EditText editTextPhone; // 编辑联系人电话的EditText
     private EditText editTextEmail; // 编辑联系人电子邮件的EditText
     private ImageButton imageButton_detail; // 显示联系人头像的ImageButton
     private Spinner spinnerDetail; // 显示联系人分组的Spinner
+    private Button buttonCallContact; // 拨打电话按钮
     String name; // 联系人姓名
     private ContactViewModel contactViewModel; // 联系人视图模型
     private static final int PICK_IMAGE_REQUEST = 1; // 选择图片请求码
@@ -56,6 +63,7 @@ public class ContactDetailActivity extends AppCompatActivity {
         editTextEmail = findViewById(R.id.editTextTextEmailAddress_contact_detail);
         imageButton_detail = findViewById(R.id.image_contact_detail);
         spinnerDetail = findViewById(R.id.spinner_group_contact_detail);
+        buttonCallContact = findViewById(R.id.button_call); // 初始化拨打电话按钮
 
         // 设置Spinner适配器
         ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(this,
@@ -106,6 +114,14 @@ public class ContactDetailActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     startActivityForResult(intent, PICK_IMAGE_REQUEST);
+                }
+            });
+
+            // 设置拨打电话按钮点击监听器
+            buttonCallContact.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    makePhoneCall();
                 }
             });
         }
@@ -167,5 +183,35 @@ public class ContactDetailActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    // 拨打电话的方法
+    private void makePhoneCall() {
+        String phoneNumber = editTextPhone.getText().toString();
+        if (phoneNumber.trim().length() > 0) {
+            if (ContextCompat.checkSelfPermission(ContactDetailActivity.this,
+                    Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(ContactDetailActivity.this,
+                        new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CALL_PERMISSION);
+            } else {
+                String dial = "tel:" + phoneNumber;
+                startActivity(new Intent(Intent.ACTION_CALL, Uri.parse(dial)));
+            }
+        } else {
+            Toast.makeText(ContactDetailActivity.this, "电话号码无效", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // 处理权限请求结果
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CALL_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                makePhoneCall();
+            } else {
+                Toast.makeText(this, "需要电话权限才能拨打电话", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }
