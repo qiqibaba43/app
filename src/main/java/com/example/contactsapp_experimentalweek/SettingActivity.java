@@ -23,8 +23,10 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 
@@ -54,6 +56,81 @@ public class SettingActivity extends AppCompatActivity {
                 requestPermission();
             }
         });
+
+        Button importButton =findViewById(R.id.button);
+        importButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                readContactsFromFileAndInsertToDatabase();
+            }
+        });
+    }
+
+    private void importContactsFromTextFile() {
+        // 获取外部存储目录
+        File externalStorageDir = Environment.getExternalStorageDirectory();
+        File importFile = new File(externalStorageDir, "contacts.txt");
+        if (importFile.exists()) {
+            StringBuilder contactData = new StringBuilder();
+            try (BufferedReader br = new BufferedReader(new FileReader(importFile))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    contactData.append(line).append("\n");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(this, "读取文件失败", Toast.LENGTH_LONG).show();
+                return;
+            }
+            // 解析文件内容并插入数据库
+            String[] contacts = contactData.toString().split("\n");
+            for (String contactStr : contacts) {
+                String[] parts = contactStr.split(",");
+                if (parts.length >= 1) {
+                    String name = parts[0].split(":")[1].trim();
+                    String phone = parts.length > 1?parts[1].split(":")[1].trim():null;
+                    String email = parts.length > 2 ? parts[2].split(":")[1].trim() : null;
+                    String groupName = parts.length > 3 ? parts[3].split(":")[2].trim() :"默认分组";
+                    String avatarUri = parts.length > 4 ? parts[4].split(":")[3].trim() :"drawable/image_contact.png";
+                    // 创建 Contact 对象并插入数据库
+                    Contact contact = new Contact(name, phone, email,groupName,avatarUri);
+                    contactViewModel.insertContact(contact);
+                }
+            }
+            Toast.makeText(this, "联系人导入成功", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(this, "文件不存在", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    // 读取外部文件中的联系人并导入数据库
+    private void readContactsFromFileAndInsertToDatabase() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Android 11及以上版本，使用新的存储权限管理方式
+            if (Environment.isExternalStorageManager()) {
+                importContactsFromTextFile();
+            } else {
+                // 请求用户授权管理所有文件访问权限
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                intent.setData(Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, REQUEST_CODE);
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Android 6.0及以上版本，需要动态请求存储权限
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+                importContactsFromTextFile();
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        android.Manifest.permission.READ_CONTACTS
+                }, REQUEST_CODE);
+            }
+        } else {
+            // Android 6.0以下版本，直接写入文件
+            importContactsFromTextFile();
+        }
+
     }
 
     @Override
