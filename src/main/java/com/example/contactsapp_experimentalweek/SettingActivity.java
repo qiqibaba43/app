@@ -61,42 +61,44 @@ public class SettingActivity extends AppCompatActivity {
             }
         });
 
-        Button importButton =findViewById(R.id.button);
+        // 导入按钮点击事件
+        Button importButton = findViewById(R.id.button);
         importButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 readContactsFromFileAndInsertToDatabase();
             }
         });
-        RadioGroup radioGroup_theme=findViewById(R.id.radioGroup_theme_set);
+
+        // 主题选择
+        RadioGroup radioGroup_theme = findViewById(R.id.radioGroup_theme_set);
         SharedPreferences sharedPreferences_theme = getSharedPreferences("MyPrefsTheme", MODE_PRIVATE);
         int savedThemeRadioButtonId = sharedPreferences_theme.getInt("selectedThemeRadioButtonId", -1);
-        if (savedThemeRadioButtonId  != -1) {
+        if (savedThemeRadioButtonId != -1) {
             RadioButton savedRadioButton = findViewById(savedThemeRadioButtonId);
             savedRadioButton.setChecked(true);
-        }else{
+        } else {
             RadioButton radioButton_theme_light = findViewById(R.id.radioButton_theme_light);
             radioButton_theme_light.setChecked(true);
         }
+
         radioGroup_theme.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
                 // 获取被选中的RadioButton的ID
                 int selectedThemeRadioButtonId = radioGroup.getCheckedRadioButtonId();
 
-                SharedPreferences sharedPreferences_theme= getSharedPreferences("MyPrefsTheme", MODE_PRIVATE);
+                SharedPreferences sharedPreferences_theme = getSharedPreferences("MyPrefsTheme", MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences_theme.edit();
                 editor.putInt("selectedThemeRadioButtonId", selectedThemeRadioButtonId);
                 editor.apply();
+
                 if (selectedThemeRadioButtonId == R.id.radioButton_theme_dark) {
-//                    default_theme.setValue("AppTheme_Dark");
                     ThemeUtil.night = true;
                 }
                 if (selectedThemeRadioButtonId == R.id.radioButton_theme_light) {
-//                    default_theme.setValue("AppTheme_Light");
                     ThemeUtil.night = false;
                 }
-//                recreate();
             }
         });
     }
@@ -123,12 +125,12 @@ public class SettingActivity extends AppCompatActivity {
                 String[] parts = contactStr.split(",");
                 if (parts.length >= 1) {
                     String name = parts[0].split(":")[1].trim();
-                    String phone = parts.length > 1?parts[1].split(":")[1].trim():null;
+                    String phone = parts.length > 1 ? parts[1].split(":")[1].trim() : null;
                     String email = parts.length > 2 ? parts[2].split(":")[1].trim() : null;
-                    String groupName = parts.length > 3 ? parts[3].split(":")[2].trim() :"默认分组";
-                    String avatarUri = parts.length > 4 ? parts[4].split(":")[3].trim() :"drawable/image_contact.png";
+                    String groupName = parts.length > 3 ? parts[3].split(":")[1].trim() : "默认分组";
+                    String avatarUri = parts.length > 4 ? parts[4].split(":")[1].trim() : "drawable/image_contact.png";
                     // 创建 Contact 对象并插入数据库
-                    Contact contact = new Contact(name, phone, email,groupName,avatarUri);
+                    Contact contact = new Contact(name, phone, email, groupName, avatarUri);
                     contactViewModel.insertContact(contact);
                 }
             }
@@ -152,20 +154,19 @@ public class SettingActivity extends AppCompatActivity {
             }
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // Android 6.0及以上版本，需要动态请求存储权限
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                    ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
                 importContactsFromTextFile();
             } else {
                 ActivityCompat.requestPermissions(this, new String[]{
-                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        android.Manifest.permission.READ_CONTACTS
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_CONTACTS
                 }, REQUEST_CODE);
             }
         } else {
             // Android 6.0以下版本，直接写入文件
             importContactsFromTextFile();
         }
-
     }
 
     @Override
@@ -229,11 +230,12 @@ public class SettingActivity extends AppCompatActivity {
                 if (contacts != null && contacts.size() > 0) {
                     StringBuilder contactData = new StringBuilder();
                     for (Contact contact : contacts) {
-                        contactData.append("Name: ").append(contact.getName()).append(", Phone: ").append(contact.getPhoneNumber());
-                        if (contact.getEmail() != null && !contact.getEmail().isEmpty()) {
-                            contactData.append(", Email: ").append(contact.getEmail());
-                        }
-                        contactData.append("\n");
+                        contactData.append("Name: ").append(contact.getName())
+                                .append(", Phone: ").append(contact.getPhoneNumber())
+                                .append(", Email: ").append(contact.getEmail())
+                                .append(", Group: ").append(contact.getGroupName())
+                                .append(", Avatar: ").append(contact.getAvatarUri())
+                                .append("\n");
                     }
                     exportContactsToFile(contactData.toString());
                 } else {
