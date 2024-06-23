@@ -15,13 +15,17 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -30,9 +34,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private ContactViewModel contactViewModel;
     private DrawerLayout drawer;
     private LiveData<List<Contact>> currentLiveData;
+    static List contactsList=new ArrayList<>();
+    RecyclerView recyclerView_contacts;
+    private List<String> letters = Arrays.asList( "A", "B", "C", "D", "E", "F", "G",
+            "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+            "U", "V", "W", "X", "Y", "Z" );
+    LettersAdapter LAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeUtil.changeTheme(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -59,12 +72,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
         CAdapter = new ContactAdapter(this);
-        RecyclerView recyclerView_contacts = findViewById(R.id.recyclerView_contacts);
+        recyclerView_contacts = findViewById(R.id.recyclerView_contacts);
         recyclerView_contacts.setAdapter(CAdapter);
         recyclerView_contacts.setLayoutManager(new LinearLayoutManager(this));
 
+        LAdapter=new LettersAdapter(this);
+        RecyclerView recyclerViewLetters = findViewById(R.id.recycleView_letters);
+        recyclerViewLetters.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        recyclerViewLetters.setAdapter(LAdapter);
+        LAdapter.setLetters(letters);
+
         contactViewModel = new ViewModelProvider(this).get(ContactViewModel.class);
-        observeContacts(contactViewModel.getAllContacts());
+//        observeContacts(contactViewModel.getAllContacts());
+        contactViewModel.getAllContacts().observe(this, new Observer<List<Contact>>() {
+            @Override
+            public void onChanged(List<Contact> contacts) {
+                contactsList.addAll(contacts);
+                CAdapter.setContacts(contacts);
+                CAdapter.notifyDataSetChanged();
+            }
+        });
 
         SearchView searchViewContact = findViewById(R.id.Search_contact);
         searchViewContact.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -106,6 +133,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(intent);
             }
         });
+        LAdapter.setOnItemClickListener(new LettersAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(String letter) {
+                scrollToLetter(letter);
+            }
+        });
+
     }
 
     @Override
@@ -181,5 +215,39 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      */
     private void performSearch(String query) {
         observeContacts(contactViewModel.searchContactsByKeyword(query));
+    }
+
+    public void scrollToLetter(String letter) {
+        int position = findPositionForLetter(letter);
+        if (position != -1) {
+            // 滚动到该位置
+//            / 创建一个 LinearSmoothScroller 实例
+            LinearSmoothScroller smoothScroller = new LinearSmoothScroller(recyclerView_contacts.getContext()) {
+                @Override
+                protected int getVerticalSnapPreference() {
+                    // 确保滚动到指定位置时，该位置之前的内容也会被滚动
+                    return LinearSmoothScroller.SNAP_TO_START;
+                }
+            };
+            smoothScroller.setTargetPosition(position);
+            // 应用滚动器
+            RecyclerView.LayoutManager layoutManager = recyclerView_contacts.getLayoutManager();
+            if (layoutManager != null) {
+                layoutManager.startSmoothScroll(smoothScroller);
+            }
+        }
+    }
+    private int findPositionForLetter(String letter) {
+        // 实现逻辑来找到对应字母的第一个联系人的位置
+        // 这可能涉及到对联系人列表的搜索
+        for (int i = 0; i < contactsList.size(); i++) {
+            Contact contact = (Contact) contactsList.get(i);
+            String firstPinyin = CAdapter.getFirstPinyin(contact);
+            if (firstPinyin.startsWith(letter,0)) {
+                return i;
+            }
+        }
+        // 返回 -1 如果找不到
+        return -1;
     }
 }

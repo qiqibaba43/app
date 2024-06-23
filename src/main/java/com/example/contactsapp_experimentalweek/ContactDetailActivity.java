@@ -45,6 +45,8 @@ public class ContactDetailActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeUtil.changeTheme(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail); // 设置布局
 

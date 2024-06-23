@@ -3,6 +3,7 @@ package com.example.contactsapp_experimentalweek;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -12,6 +13,8 @@ import android.provider.Settings;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -37,6 +40,7 @@ public class SettingActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeUtil.changeTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
 
@@ -62,6 +66,37 @@ public class SettingActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 readContactsFromFileAndInsertToDatabase();
+            }
+        });
+        RadioGroup radioGroup_theme=findViewById(R.id.radioGroup_theme_set);
+        SharedPreferences sharedPreferences_theme = getSharedPreferences("MyPrefsTheme", MODE_PRIVATE);
+        int savedThemeRadioButtonId = sharedPreferences_theme.getInt("selectedThemeRadioButtonId", -1);
+        if (savedThemeRadioButtonId  != -1) {
+            RadioButton savedRadioButton = findViewById(savedThemeRadioButtonId);
+            savedRadioButton.setChecked(true);
+        }else{
+            RadioButton radioButton_theme_light = findViewById(R.id.radioButton_theme_light);
+            radioButton_theme_light.setChecked(true);
+        }
+        radioGroup_theme.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                // 获取被选中的RadioButton的ID
+                int selectedThemeRadioButtonId = radioGroup.getCheckedRadioButtonId();
+
+                SharedPreferences sharedPreferences_theme= getSharedPreferences("MyPrefsTheme", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences_theme.edit();
+                editor.putInt("selectedThemeRadioButtonId", selectedThemeRadioButtonId);
+                editor.apply();
+                if (selectedThemeRadioButtonId == R.id.radioButton_theme_dark) {
+//                    default_theme.setValue("AppTheme_Dark");
+                    ThemeUtil.night = true;
+                }
+                if (selectedThemeRadioButtonId == R.id.radioButton_theme_light) {
+//                    default_theme.setValue("AppTheme_Light");
+                    ThemeUtil.night = false;
+                }
+//                recreate();
             }
         });
     }

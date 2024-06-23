@@ -8,5 +8,9 @@
     <color name="colorAccentLight">#add8e6</color>
     <color name="textColorPrimaryLight">#212121</color>
     <color name="windowBackgroundLight">#FFFFFF</color>
-
+    <color name="colorPrimaryDark">#64b5f6</color> <!-- 宁静的蓝色 -->
+    <color name="colorPrimaryDarkDark">#1976D2</color> <!-- 深一点的蓝色 -->
+    <color name="colorAccentDark">#BBDEFB</color> <!-- 淡蓝色 -->
+    <color name="textColorPrimaryDark">#FF000000</color> <!-- 纯白色文字 -->
+    <color name="windowBackgroundDark">#7b68ee</color> <!-- 深灰色背景 -->
 </resources>

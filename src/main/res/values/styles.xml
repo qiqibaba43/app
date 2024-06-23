@@ -22,4 +22,21 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
+
+    <!-- 深色主题 -->
+    <style name="AppTheme.Dark" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- 主要颜色，通常用,于actionBar默认使用该颜色，Toolbar导航栏的底色 应用栏 -->
+        <item name="colorPrimary">@color/colorPrimaryDark</item>
+        <!--  应用的主要暗色调,statusBarColor 默认使用该颜色  -->
+        <item name="colorPrimaryDark">@color/colorPrimaryDarkDark</item>
+        <!-- 一般控件的选中效果默认采用该颜色,如 CheckBox,RadioButton,SwitchCompat，ProcessBar等-->
+        <item name="colorAccent">@color/colorAccentDark</item>
+        <!-- 背景颜色 -->
+        <item name="android:windowBackground">@color/windowBackgroundDark</item>
+        <!-- 主要文字颜色 -->
+        <item name="android:textColor">@color/textColorPrimaryDark</item>
+        <item name="android:textColorHint">@color/textColorPrimaryDark</item>
+        <item name="android:editTextColor">@color/textColorPrimaryDark</item>
+    </style>
+
 </resources>
