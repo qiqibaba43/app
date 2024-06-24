@@ -142,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
+    //重写设备返回键
     @Override
     public void onBackPressed() {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -159,13 +160,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         } else {
             String group = "";
             if (itemId == R.id.nav_family) {
-                group = "家人";
+                group =getString(R.string.Family);
             } else if (itemId == R.id.nav_friend) {
-                group = "朋友";
+                group =getString(R.string.Friend);
             } else if (itemId == R.id.nav_classmate) {
-                group = "同学";
+                group = getString(R.string.Classmate);
             } else if (itemId == R.id.nav_colleague) {
-                group = "同事";
+                group =getString(R.string.Colleague);
             }
 
             observeContacts(contactViewModel.searchContactsByGroup(group));
@@ -185,7 +186,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         currentLiveData = liveData;
         currentLiveData.observe(this, contacts -> {
+            //更新适配器数据
             CAdapter.setContacts(contacts);
+            //通知 RecyclerView 数据集已更改，从而刷新显示的内容。
             CAdapter.notifyDataSetChanged();
         });
     }
