@@ -40,13 +40,13 @@ public class SettingActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ThemeUtil.changeTheme(this);
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_setting);
+        ThemeUtil.changeTheme(this);//应用到配置界面上
+        super.onCreate(savedInstanceState);//super.onCreate(savedInstanceState)是调用父类的onCreate构造函数,savedInstanceState是保存当前Activity的状态信息
+        setContentView(R.layout.activity_setting);//加载并设置当前布局文件作为当前界面的显示
 
         Toolbar toolbar = findViewById(R.id.toolbar_configuration);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        setSupportActionBar(toolbar);//Toolbar 通过 setSupportActionBar(toolbar) 被修饰成了actionbar
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);//给左上角图标的左边加上一个返回的图标
         getSupportActionBar().setDisplayShowTitleEnabled(false); // 隐藏标题
 
         // 初始化 ContactViewModel
@@ -72,35 +72,47 @@ public class SettingActivity extends AppCompatActivity {
 
         // 主题选择
         RadioGroup radioGroup_theme = findViewById(R.id.radioGroup_theme_set);
+        // 获取名为"MyPrefsTheme"的SharedPreferences实例，用于存储和读取主题选择状态
         SharedPreferences sharedPreferences_theme = getSharedPreferences("MyPrefsTheme", MODE_PRIVATE);
+        // 从SharedPreferences中读取已保存选中的RadioButton的ID，默认值为-1,如果有已保存的ID，则找到对应的RadioButton并将其设为选中状态；
         int savedThemeRadioButtonId = sharedPreferences_theme.getInt("selectedThemeRadioButtonId", -1);
+        // 如果有已保存的RadioButton选中状态，则将该RadioButton设为选中状态
         if (savedThemeRadioButtonId != -1) {
             RadioButton savedRadioButton = findViewById(savedThemeRadioButtonId);
             savedRadioButton.setChecked(true);
         } else {
+            // 如果没有保存的选中状态，默认选中浅色主题的RadioButton
             RadioButton radioButton_theme_light = findViewById(R.id.radioButton_theme_light);
             radioButton_theme_light.setChecked(true);
         }
-
+// 设置RadioGroup的选中监听器
         radioGroup_theme.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
+            @Override//当RadioButton的选中状态发生变化时调用该方法。
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
                 // 获取被选中的RadioButton的ID
                 int selectedThemeRadioButtonId = radioGroup.getCheckedRadioButtonId();
-
+                // 获取名为"MyPrefsTheme"的SharedPreferences实例，准备写入新的选中状态
                 SharedPreferences sharedPreferences_theme = getSharedPreferences("MyPrefsTheme", MODE_PRIVATE);
+                // 获取SharedPreferences的编辑器，准备进行修改
                 SharedPreferences.Editor editor = sharedPreferences_theme.edit();
+                // 将当前选中的RadioButton的ID存入SharedPreferences中
                 editor.putInt("selectedThemeRadioButtonId", selectedThemeRadioButtonId);
+                // 提交修改
                 editor.apply();
-
+            // 根据选中的主题RadioButton来设置全局变量ThemeUtil.night
                 if (selectedThemeRadioButtonId == R.id.radioButton_theme_dark) {
                     ThemeUtil.night = true;
                 }
                 if (selectedThemeRadioButtonId == R.id.radioButton_theme_light) {
                     ThemeUtil.night = false;
                 }
+                // 自动跳转到主界面,创建一个意图，从当前设置界面跳转到主界面MainActivity
+                Intent intent = new Intent(SettingActivity.this, MainActivity.class);
+                startActivity(intent);//启动MainActivity。
+                finish(); // 结束当前的SettingActivity界面
             }
         });
+        //提供主题选择功能，并通过SharedPreferences来保存用户的选择，以便应用在下次启动时记住用户的偏好。
     }
 
     private void importContactsFromTextFile() {

@@ -28,7 +28,7 @@
         <!-- 主要颜色，通常用,于actionBar默认使用该颜色，Toolbar导航栏的底色 应用栏 -->
         <item name="colorPrimary">@color/colorPrimaryDark</item>
         <!--  应用的主要暗色调,statusBarColor 默认使用该颜色  -->
-        <item name="colorPrimaryDark">@color/colorPrimaryDarkDark</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDarkLight</item>
         <!-- 一般控件的选中效果默认采用该颜色,如 CheckBox,RadioButton,SwitchCompat，ProcessBar等-->
         <item name="colorAccent">@color/colorAccentDark</item>
         <!-- 背景颜色 -->
@@ -37,6 +37,7 @@
         <item name="android:textColor">@color/textColorPrimaryDark</item>
         <item name="android:textColorHint">@color/textColorPrimaryDark</item>
         <item name="android:editTextColor">@color/textColorPrimaryDark</item>
+        <item name="colorControlNormal">@color/white</item>
     </style>
 
 </resources>
