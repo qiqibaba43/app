@@ -1,11 +1,12 @@
 <resources>
     <string name="app_name">Contacts App_experimental week</string>
+    <string name="Default">默认分组</string>
     <string name="Family">家人</string>
     <string name="Friend">朋友</string>
     <string name="Classmate">同学</string>
     <string name="Colleague">同事</string>
     <string-array name="groups">
-        <item>全部</item>
+        <item>默认分组</item>
         <item>家人</item>
         <item>朋友</item>
         <item>同学</item>

@@ -159,7 +159,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             observeContacts(contactViewModel.getAllContacts());
         } else {
             String group = "";
-            if (itemId == R.id.nav_family) {
+            if (itemId == R.id.nav_default) {
+                group =getString(R.string.Default);
+            }
+            else if (itemId == R.id.nav_family) {
                 group =getString(R.string.Family);
             } else if (itemId == R.id.nav_friend) {
                 group =getString(R.string.Friend);
@@ -168,7 +171,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             } else if (itemId == R.id.nav_colleague) {
                 group =getString(R.string.Colleague);
             }
-
             observeContacts(contactViewModel.searchContactsByGroup(group));
         }
         drawer.closeDrawer(GravityCompat.START);

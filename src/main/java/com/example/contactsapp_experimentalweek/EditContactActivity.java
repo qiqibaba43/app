@@ -53,10 +53,11 @@ public class EditContactActivity extends AppCompatActivity {
         editTextEmail = findViewById(R.id.editTextTextEmailAddress_add_contact);
         spinnerGroup = findViewById(R.id.spinner_add_contact);
 
-        // 设置 Spinner 的适配器
-        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(this,
-                R.array.groups, android.R.layout.simple_spinner_item);
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        //设置Spinner适配器
+        CharSequence [] arr={"默认分组","朋友","同学","同事"};
+        ArrayAdapter<CharSequence> spinnerAdapter = new ArrayAdapter<>(this,
+                R.layout.item_spinner,R.id.textView_spinner,arr);
+        spinnerAdapter.setDropDownViewResource(R.layout.item_spinner);
         spinnerGroup.setAdapter(spinnerAdapter);
 
         // 创建数据库实例

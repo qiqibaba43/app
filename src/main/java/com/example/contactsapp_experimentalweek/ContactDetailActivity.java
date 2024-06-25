@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -67,10 +68,11 @@ public class ContactDetailActivity extends AppCompatActivity {
         spinnerDetail = findViewById(R.id.spinner_group_contact_detail);
         buttonCallContact = findViewById(R.id.button_call); // 初始化拨打电话按钮
 
-        // 设置Spinner适配器
-        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(this,
-                R.array.groups, android.R.layout.simple_spinner_item);
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+         //设置Spinner适配器
+        CharSequence [] arr={"默认分组","家人","朋友","同学","同事"};
+        ArrayAdapter<CharSequence> spinnerAdapter = new ArrayAdapter<>(this,
+                R.layout.item_spinner,R.id.textView_spinner,arr);
+        spinnerAdapter.setDropDownViewResource(R.layout.item_spinner);
         spinnerDetail.setAdapter(spinnerAdapter);
 
         // 初始化ViewModel
