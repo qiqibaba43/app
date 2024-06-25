@@ -40,8 +40,9 @@ public class SettingActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        ThemeUtil.changeTheme(this);//应用到配置界面上
+        //ThemeUtil.changeTheme(this);//应用到配置界面上
         super.onCreate(savedInstanceState);//super.onCreate(savedInstanceState)是调用父类的onCreate构造函数,savedInstanceState是保存当前Activity的状态信息
+        ThemeUtil.changeTheme(this);
         setContentView(R.layout.activity_setting);//加载并设置当前布局文件作为当前界面的显示
 
         Toolbar toolbar = findViewById(R.id.toolbar_configuration);
@@ -69,12 +70,11 @@ public class SettingActivity extends AppCompatActivity {
                 readContactsFromFileAndInsertToDatabase();
             }
         });
-
-        // 主题选择
+// 主题选择
         RadioGroup radioGroup_theme = findViewById(R.id.radioGroup_theme_set);
         // 获取名为"MyPrefsTheme"的SharedPreferences实例，用于存储和读取主题选择状态
         SharedPreferences sharedPreferences_theme = getSharedPreferences("MyPrefsTheme", MODE_PRIVATE);
-        // 从SharedPreferences中读取已保存选中的RadioButton的ID，默认值为-1,如果有已保存的ID，则找到对应的RadioButton并将其设为选中状态；
+        // 从SharedPreferences中读取已保存选中的RadioButton的ID，默认值为-1
         int savedThemeRadioButtonId = sharedPreferences_theme.getInt("selectedThemeRadioButtonId", -1);
         // 如果有已保存的RadioButton选中状态，则将该RadioButton设为选中状态
         if (savedThemeRadioButtonId != -1) {
@@ -99,22 +99,26 @@ public class SettingActivity extends AppCompatActivity {
                 editor.putInt("selectedThemeRadioButtonId", selectedThemeRadioButtonId);
                 // 提交修改
                 editor.apply();
-            // 根据选中的主题RadioButton来设置全局变量ThemeUtil.night
+                // 根据选中的主题RadioButton来设置全局变量ThemeUtil.night
                 if (selectedThemeRadioButtonId == R.id.radioButton_theme_dark) {
                     ThemeUtil.night = true;
                 }
                 if (selectedThemeRadioButtonId == R.id.radioButton_theme_light) {
                     ThemeUtil.night = false;
                 }
-                // 自动跳转到主界面,创建一个意图，从当前设置界面跳转到主界面MainActivity
-                Intent intent = new Intent(SettingActivity.this, MainActivity.class);
-                startActivity(intent);//启动MainActivity。
-                finish(); // 结束当前的SettingActivity界面
+                // 应用主题变化
+                ThemeUtil.changeTheme(SettingActivity.this);
+                // 更新当前界面
+                recreate(); // 重新创建当前活动以应用主题变化
             }
         });
-        //提供主题选择功能，并通过SharedPreferences来保存用户的选择，以便应用在下次启动时记住用户的偏好。
+        //提供主题选择功能，并通过SharedPreferences来保存用户的选择，应用在下次启动时记住用户的偏好。
     }
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ThemeUtil.changeTheme(this); // 应用当前的主题设置
+    }
     private void importContactsFromTextFile() {
         // 获取外部存储目录
         File externalStorageDir = Environment.getExternalStorageDirectory();
