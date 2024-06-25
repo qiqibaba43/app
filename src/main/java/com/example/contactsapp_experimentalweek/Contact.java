@@ -7,7 +7,10 @@ import androidx.room.PrimaryKey;
 
 @Entity(tableName = "contacts")
 public class Contact {//主要数据设计
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
+    private int id;
+
     @NonNull
     @ColumnInfo(name = "name")
     private String name;
@@ -19,7 +22,6 @@ public class Contact {//主要数据设计
     private String groupName;
     @ColumnInfo(name = "avatarUri")
     private String avatarUri;
-
     // 构造函数
     public Contact(String name,  String phoneNumber,String email, String groupName, String avatarUri) {
         this.name = name;
@@ -27,6 +29,13 @@ public class Contact {//主要数据设计
         this.email = email;
         this.groupName= groupName;
         this.avatarUri = avatarUri;
+    }
+    // Getter 和 Setter 方法
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
     }
     public String getName() {
         return name;

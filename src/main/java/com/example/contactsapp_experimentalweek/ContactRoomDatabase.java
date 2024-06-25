@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 // 定义数据库类，包含一个表（Contact）
-@Database(entities = {Contact.class}, version = 1, exportSchema = false)
+@Database(entities = {Contact.class}, version = 2, exportSchema = false)
 public abstract class ContactRoomDatabase extends RoomDatabase {
     // 获取DAO实例的抽象方法
     public abstract ContactDao contactDao();
