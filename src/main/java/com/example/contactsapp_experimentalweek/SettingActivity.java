@@ -2,6 +2,7 @@ package com.example.contactsapp_experimentalweek;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -37,12 +38,9 @@ public class SettingActivity extends AppCompatActivity {
 
     // 常量定义：请求码、SharedPreferences名称、拒绝权限计数键名和最大拒绝次数
     private static final int REQUEST_CODE = 1024;
-    private static final String PREFS_NAME = "PermissionPrefs";
-    private static final String KEY_PERMISSION_DENIED_COUNT = "PermissionDeniedCount";
-    private static final int MAX_DENIED_COUNT = 2;
-
     private ContactViewModel contactViewModel;
-
+    private int permissionRequestCount;
+    private static final int MAX_PERMISSION_REQUESTS = 2;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,16 +51,18 @@ public class SettingActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true); // 启用返回按钮
         getSupportActionBar().setDisplayShowTitleEnabled(false); // 隐藏标题
-
+        permissionRequestCount = 0;
         // 初始化 ContactViewModel
         contactViewModel = new ViewModelProvider(this).get(ContactViewModel.class);
 
         // 导出按钮点击事件
         Button exportButton = findViewById(R.id.button2);
+
         exportButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 requestPermission(); // 请求权限
+                readContactsFromDatabaseAndWriteToFile();
             }
         });
 
@@ -71,10 +71,10 @@ public class SettingActivity extends AppCompatActivity {
         importButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                readContactsFromFileAndInsertToDatabase(); // 读取联系人文件并插入数据库
+                requestPermission(); // 请求权限
+                importContactsFromTextFile();
             }
         });
-
         // 主题选择
         RadioGroup radioGroup_theme = findViewById(R.id.radioGroup_theme_set);
         SharedPreferences sharedPreferences_theme = getSharedPreferences("MyPrefsTheme", MODE_PRIVATE);
@@ -105,13 +105,11 @@ public class SettingActivity extends AppCompatActivity {
             }
         });
     }
-
     @Override
     protected void onResume() {
         super.onResume();
         ThemeUtil.changeTheme(this); // 确保主题在活动恢复时正确应用
     }
-
     // 从文本文件导入联系人
     private void importContactsFromTextFile() {
         File externalStorageDir = Environment.getExternalStorageDirectory();
@@ -146,40 +144,6 @@ public class SettingActivity extends AppCompatActivity {
             Toast.makeText(this, "文件不存在", Toast.LENGTH_LONG).show();
         }
     }
-
-    // 读取联系人文件并插入数据库
-    private void readContactsFromFileAndInsertToDatabase() {
-        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        int deniedCount = preferences.getInt(KEY_PERMISSION_DENIED_COUNT, 0);
-
-        if (deniedCount >= MAX_DENIED_COUNT) {
-            Toast.makeText(this, "读取联系人权限请求已被拒绝，请在设置中手动开启权限。", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (Environment.isExternalStorageManager()) {
-                importContactsFromTextFile();
-            } else {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                intent.setData(Uri.parse("package:" + getPackageName()));
-                startActivityForResult(intent, REQUEST_CODE);
-            }
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
-                    ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
-                importContactsFromTextFile();
-            } else {
-                ActivityCompat.requestPermissions(this, new String[]{
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_CONTACTS
-                }, REQUEST_CODE);
-            }
-        } else {
-            importContactsFromTextFile();
-        }
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -201,37 +165,32 @@ public class SettingActivity extends AppCompatActivity {
 
     // 请求权限
     private void requestPermission() {
-        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        int deniedCount = preferences.getInt(KEY_PERMISSION_DENIED_COUNT, 0);
-
-        if (deniedCount >= MAX_DENIED_COUNT) {
-            Toast.makeText(this, "存储联系人权限请求已被拒绝，请在设置中手动开启权限。", Toast.LENGTH_LONG).show();
-            return;
-        }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Android 11及以上版本，使用新的存储权限管理方式
             if (Environment.isExternalStorageManager()) {
-                readContactsFromDatabaseAndWriteToFile();
             } else {
+                // 请求用户授权管理所有文件访问权限
                 Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
                 intent.setData(Uri.parse("package:" + getPackageName()));
                 startActivityForResult(intent, REQUEST_CODE);
+                permissionRequestCount++;
             }
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Android 6.0及以上版本，需要动态请求存储权限
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
                     ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED) {
-                readContactsFromDatabaseAndWriteToFile();
+
             } else {
                 ActivityCompat.requestPermissions(this, new String[]{
                         Manifest.permission.WRITE_EXTERNAL_STORAGE,
                         Manifest.permission.READ_CONTACTS
                 }, REQUEST_CODE);
+                permissionRequestCount++;
             }
         } else {
-            readContactsFromDatabaseAndWriteToFile();
+            // Android 6.0以下版本，直接写入文件
         }
     }
-
     // 从数据库读取联系人并写入文件
     @SuppressLint("Range")
     private void readContactsFromDatabaseAndWriteToFile() {
@@ -274,15 +233,16 @@ public class SettingActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                readContactsFromDatabaseAndWriteToFile();
             } else {
-                SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-                int deniedCount = preferences.getInt(KEY_PERMISSION_DENIED_COUNT, 0);
-                SharedPreferences.Editor editor = preferences.edit();
-                editor.putInt(KEY_PERMISSION_DENIED_COUNT, deniedCount + 1);
-                editor.apply();
-
-                Toast.makeText(this, "存储或读取联系人权限获取失败", Toast.LENGTH_LONG).show();
+                if (permissionRequestCount < MAX_PERMISSION_REQUESTS) {
+                    permissionRequestCount++;
+                    ActivityCompat.requestPermissions(this, new String[]{
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.READ_CONTACTS
+                    }, REQUEST_CODE);
+                } else {
+                    showPermissionRationale();
+                }
             }
         }
     }
@@ -292,16 +252,24 @@ public class SettingActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             if (Environment.isExternalStorageManager()) {
-                readContactsFromDatabaseAndWriteToFile();
             } else {
-                SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-                int deniedCount = preferences.getInt(KEY_PERMISSION_DENIED_COUNT, 0);
-                SharedPreferences.Editor editor = preferences.edit();
-                editor.putInt(KEY_PERMISSION_DENIED_COUNT, deniedCount + 1);
-                editor.apply();
-
                 Toast.makeText(this, "存储权限获取失败", Toast.LENGTH_LONG).show();
             }
         }
+    }
+    private void showPermissionRationale() {
+        // 显示一个对话框，告诉用户为什么需要这些权限，并引导他们去设置中手动开启权限
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("权限请求")
+                .setMessage("为了正常使用此功能，请在设置中开启必要的权限。")
+                .setPositiveButton("去设置", (dialog, which) -> {
+                    Intent intent = new Intent();
+                    intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    Uri uri = Uri.fromParts("package", getPackageName(), null);
+                    intent.setData(uri);
+                    startActivity(intent);
+                })
+                .setNegativeButton("取消", null)
+                .show();
     }
 }

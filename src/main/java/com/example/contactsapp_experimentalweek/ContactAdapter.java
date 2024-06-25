@@ -114,7 +114,6 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
             });
         }
     }
-
     // 设置联系人列表并通知适配器数据已更改
     public void setContacts(List<Contact> contacts) {
         contactList = contacts; // 更新联系人列表
