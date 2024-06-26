@@ -54,7 +54,7 @@ public class EditContactActivity extends AppCompatActivity {
         spinnerGroup = findViewById(R.id.spinner_add_contact);
 
         //设置Spinner适配器
-        CharSequence [] arr={"默认分组","朋友","同学","同事"};
+        CharSequence [] arr={"默认分组","家人","朋友","同学","同事"};
         ArrayAdapter<CharSequence> spinnerAdapter = new ArrayAdapter<>(this,
                 R.layout.item_spinner,R.id.textView_spinner,arr);
         spinnerAdapter.setDropDownViewResource(R.layout.item_spinner);

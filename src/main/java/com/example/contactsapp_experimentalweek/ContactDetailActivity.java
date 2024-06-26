@@ -102,6 +102,7 @@ public class ContactDetailActivity extends AppCompatActivity {
                         if (contact.getAvatarUri().equals("drawable/image_contact.png")) {
                             Drawable drawable = ContextCompat.getDrawable(ContactDetailActivity.this, R.drawable.image_contact);
                             imageButton_detail.setImageDrawable(drawable);
+                            selectedImageUri=Uri.parse("drawable/image_contact.png");
                         } else {
                             // 使用Glide加载图片
                             Glide.with(ContactDetailActivity.this)
@@ -167,6 +168,7 @@ public class ContactDetailActivity extends AppCompatActivity {
                 @Override
                 public void onChanged(Contact contact) {
                     // 更新联系人信息
+                    contact.setName((edittextName.getText().toString()));
                     contact.setPhoneNumber(editTextPhone.getText().toString());
                     contact.setEmail(editTextEmail.getText().toString());
                     contact.setAvatarUri(selectedImageUri.toString());
