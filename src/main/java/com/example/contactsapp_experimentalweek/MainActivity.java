@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         groupMap.put(R.id.nav_colleague, getString(R.string.Colleague));
 
         int itemId = item.getItemId();
-        if (itemId == R.id.nav_all) {
+        if (itemId == R.id.nav_default) {
             observeContacts(contactViewModel.getAllContacts());
         } else {
             String group = groupMap.get(itemId);
