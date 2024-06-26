@@ -2,6 +2,7 @@ package com.example.contactsapp_experimentalweek;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -11,7 +12,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,59 +28,56 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.room.Room;
 import com.bumptech.glide.Glide;
 
-// 联系人详细信息活动类
 public class ContactDetailActivity extends AppCompatActivity {
 
-    private static final int REQUEST_CALL_PERMISSION = 1; // 请求电话权限的请求码
-    private EditText edittextName; // 编辑联系人姓名的EditText
-    private EditText editTextPhone; // 编辑联系人电话的EditText
-    private EditText editTextEmail; // 编辑联系人电子邮件的EditText
-    private ImageButton imageButton_detail; // 显示联系人头像的ImageButton
-    private Spinner spinnerDetail; // 显示联系人分组的Spinner
-    private Button buttonCallContact; // 拨打电话按钮
-    String name; // 联系人姓名
-    private ContactViewModel contactViewModel; // 联系人视图模型
-    private static final int PICK_IMAGE_REQUEST = 1; // 选择图片请求码
-    Uri selectedImageUri; // 选中的图片URI
-    private ContactRoomDatabase db_contact; // 联系人数据库
+    private static final int REQUEST_CALL_PERMISSION = 1;
+    private static final int MAX_REQUEST_COUNT = 3;
+    private static final String PREFS_NAME = "PermissionPrefs";
+    private static final String PREF_REQUEST_COUNT = "RequestCount";
+
+    private EditText edittextName;
+    private EditText editTextPhone;
+    private EditText editTextEmail;
+    private ImageButton imageButton_detail;
+    private Spinner spinnerDetail;
+    private Button buttonCallContact;
+    private ContactViewModel contactViewModel;
+    private static final int PICK_IMAGE_REQUEST = 1;
+    private Uri selectedImageUri;
+    private ContactRoomDatabase db_contact;
+    private String name;  // 确保name在类中声明
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ThemeUtil.changeTheme(this);
-
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_detail); // 设置布局
+        setContentView(R.layout.activity_detail);
 
-        // 设置工具栏
         Toolbar toolbar = findViewById(R.id.toolbar_detail);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
-            getSupportActionBar().setDisplayShowTitleEnabled(false); // 隐藏标题
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
 
-        // 初始化视图
         edittextName = findViewById(R.id.editText_name_contact_detail);
         editTextPhone = findViewById(R.id.editTextPhone_contact_detail);
         editTextEmail = findViewById(R.id.editTextTextEmailAddress_contact_detail);
         imageButton_detail = findViewById(R.id.image_contact_detail);
         spinnerDetail = findViewById(R.id.spinner_group_contact_detail);
-        buttonCallContact = findViewById(R.id.button_call); // 初始化拨打电话按钮
+        buttonCallContact = findViewById(R.id.button_call);
 
-         //设置Spinner适配器
-        CharSequence [] arr={"默认分组","家人","朋友","同学","同事"};
+        CharSequence[] arr = {"默认分组", "家人", "朋友", "同学", "同事"};
         ArrayAdapter<CharSequence> spinnerAdapter = new ArrayAdapter<>(this,
-                R.layout.item_spinner,R.id.textView_spinner,arr);
+                R.layout.item_spinner, R.id.textView_spinner, arr);
         spinnerAdapter.setDropDownViewResource(R.layout.item_spinner);
         spinnerDetail.setAdapter(spinnerAdapter);
 
-        // 初始化ViewModel
         contactViewModel = new ViewModelProvider(this).get(ContactViewModel.class);
         Intent intent = getIntent();
         name = intent.getStringExtra("contact_name");
 
-        // 如果意图中包含联系人姓名，则获取联系人信息并显示
         if (intent != null && intent.hasExtra("contact_name")) {
             contactViewModel.searchContactByName(name).observe(this, new Observer<Contact>() {
                 @Override
@@ -89,22 +86,18 @@ public class ContactDetailActivity extends AppCompatActivity {
                         edittextName.setText(contact.getName());
                         editTextPhone.setText(contact.getPhoneNumber());
                         editTextEmail.setText(contact.getEmail());
-                        // 遍历spinnerAdapter中的数据，找到匹配的选项
                         for (int i = 0; i < spinnerAdapter.getCount(); i++) {
                             CharSequence item = spinnerAdapter.getItem(i);
-                            if ((item).equals(contact.getGroupName())) {
-                                // 找到匹配的选项，设置给Spinner
-                                spinnerDetail.setSelection(i); // 设置选中项
+                            if (item.equals(contact.getGroupName())) {
+                                spinnerDetail.setSelection(i);
                                 break;
                             }
                         }
-                        // 加载头像图片
-                        if (contact.getAvatarUri().equals("drawable/image_contact.png")) {
+                        if ("drawable/image_contact.png".equals(contact.getAvatarUri())) {
                             Drawable drawable = ContextCompat.getDrawable(ContactDetailActivity.this, R.drawable.image_contact);
                             imageButton_detail.setImageDrawable(drawable);
-                            selectedImageUri=Uri.parse("drawable/image_contact.png");
+                            selectedImageUri = Uri.parse("drawable/image_contact.png");
                         } else {
-                            // 使用Glide加载图片
                             Glide.with(ContactDetailActivity.this)
                                     .load(Uri.parse(contact.getAvatarUri()))
                                     .into(imageButton_detail);
@@ -113,7 +106,6 @@ public class ContactDetailActivity extends AppCompatActivity {
                 }
             });
 
-            // 设置点击监听器，点击头像选择图片
             imageButton_detail.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -122,7 +114,6 @@ public class ContactDetailActivity extends AppCompatActivity {
                 }
             });
 
-            // 设置拨打电话按钮点击监听器
             buttonCallContact.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -131,35 +122,31 @@ public class ContactDetailActivity extends AppCompatActivity {
             });
         }
 
-        // 初始化联系人数据库
         db_contact = Room.databaseBuilder(getApplicationContext(), ContactRoomDatabase.class, "contact_database").build();
     }
 
-    // 处理选择图片结果
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
             try {
-                selectedImageUri = data.getData(); // 获取选中的图片URI
+                selectedImageUri = data.getData();
                 Glide.with(ContactDetailActivity.this)
                         .load(selectedImageUri)
-                        .into(imageButton_detail); // 使用Glide加载图片到ImageButton
+                        .into(imageButton_detail);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
 
-    // 创建菜单
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_save, menu); // 加载保存菜单
+        inflater.inflate(R.menu.menu_save, menu);
         return true;
     }
 
-    // 处理菜单项选择
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -167,19 +154,16 @@ public class ContactDetailActivity extends AppCompatActivity {
             contactViewModel.searchContactByName(name).observe(this, new Observer<Contact>() {
                 @Override
                 public void onChanged(Contact contact) {
-                    // 更新联系人信息
-                    contact.setName((edittextName.getText().toString()));
+                    contact.setName(edittextName.getText().toString());
                     contact.setPhoneNumber(editTextPhone.getText().toString());
                     contact.setEmail(editTextEmail.getText().toString());
                     contact.setAvatarUri(selectedImageUri.toString());
-                    // 异步更新数据到数据库
                     new Thread(() -> {
                         db_contact.contactDao().updateContact(contact);
                         runOnUiThread(() -> {
                             Toast.makeText(ContactDetailActivity.this, "联系人已更新", Toast.LENGTH_SHORT).show();
                         });
                     }).start();
-                    // 返回主活动
                     Intent intent = new Intent(ContactDetailActivity.this, MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
@@ -191,11 +175,17 @@ public class ContactDetailActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    // 拨打电话的方法
     private void makePhoneCall() {
         String phoneNumber = editTextPhone.getText().toString();
-        if (phoneNumber.trim().length() > 0) {
-            if (ContextCompat.checkSelfPermission(ContactDetailActivity.this,
+        if (phoneNumber == null || phoneNumber.trim().length() == 0) {
+            Toast.makeText(ContactDetailActivity.this, "电话号码无效", Toast.LENGTH_SHORT).show();
+        } else {
+            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+            int requestCount = prefs.getInt(PREF_REQUEST_COUNT, 0);
+
+            if (requestCount >= MAX_REQUEST_COUNT) {
+                Toast.makeText(this, "请在设置中手动授予电话权限", Toast.LENGTH_SHORT).show();
+            } else if (ContextCompat.checkSelfPermission(ContactDetailActivity.this,
                     Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(ContactDetailActivity.this,
                         new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CALL_PERMISSION);
@@ -203,20 +193,30 @@ public class ContactDetailActivity extends AppCompatActivity {
                 String dial = "tel:" + phoneNumber;
                 startActivity(new Intent(Intent.ACTION_CALL, Uri.parse(dial)));
             }
-        } else {
-            Toast.makeText(ContactDetailActivity.this, "电话号码无效", Toast.LENGTH_SHORT).show();
         }
     }
 
-    // 处理权限请求结果
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CALL_PERMISSION) {
+            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            int requestCount = prefs.getInt(PREF_REQUEST_COUNT, 0);
+
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 makePhoneCall();
             } else {
-                Toast.makeText(this, "需要电话权限才能拨打电话", Toast.LENGTH_SHORT).show();
+                requestCount++;
+                editor.putInt(PREF_REQUEST_COUNT, requestCount);
+                editor.apply();
+
+                if (requestCount >= MAX_REQUEST_COUNT) {
+                    Toast.makeText(this, "请在设置中手动授予电话权限", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "需要电话权限才能拨打电话", Toast.LENGTH_SHORT).show();
+                }
             }
         }
     }
