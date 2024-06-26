@@ -113,7 +113,7 @@ public class SettingActivity extends AppCompatActivity {
     // 从文本文件导入联系人
     private void importContactsFromTextFile() {
         File externalStorageDir = Environment.getExternalStorageDirectory();
-        File importFile = new File(externalStorageDir, "contacts.txt");
+        File importFile = new File(externalStorageDir, "example.txt");
         if (importFile.exists()) {
             StringBuilder contactData = new StringBuilder();
             try (BufferedReader br = new BufferedReader(new FileReader(importFile))) {

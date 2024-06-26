@@ -42,6 +42,7 @@ public class ContactDetailActivity extends AppCompatActivity {
     private ContactViewModel contactViewModel; // 联系人视图模型
     private static final int PICK_IMAGE_REQUEST = 1; // 选择图片请求码
     Uri selectedImageUri; // 选中的图片URI
+    private String avatarPath;
     private ContactRoomDatabase db_contact; // 联系人数据库
 
     @Override
@@ -102,7 +103,7 @@ public class ContactDetailActivity extends AppCompatActivity {
                         if (contact.getAvatarUri().equals("drawable/image_contact.png")) {
                             Drawable drawable = ContextCompat.getDrawable(ContactDetailActivity.this, R.drawable.image_contact);
                             imageButton_detail.setImageDrawable(drawable);
-                            selectedImageUri=Uri.parse("drawable/image_contact.png");
+                            avatarPath="drawable/image_contact.png";
                         } else {
                             // 使用Glide加载图片
                             Glide.with(ContactDetailActivity.this)
@@ -145,6 +146,7 @@ public class ContactDetailActivity extends AppCompatActivity {
                 Glide.with(ContactDetailActivity.this)
                         .load(selectedImageUri)
                         .into(imageButton_detail); // 使用Glide加载图片到ImageButton
+                avatarPath=selectedImageUri.toString();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -171,7 +173,7 @@ public class ContactDetailActivity extends AppCompatActivity {
                     contact.setName((edittextName.getText().toString()));
                     contact.setPhoneNumber(editTextPhone.getText().toString());
                     contact.setEmail(editTextEmail.getText().toString());
-                    contact.setAvatarUri(selectedImageUri.toString());
+                    contact.setAvatarUri(avatarPath);
                     // 异步更新数据到数据库
                     new Thread(() -> {
                         db_contact.contactDao().updateContact(contact);
